@@ -17,13 +17,13 @@ var ElephantJS = (function () {
 	 * @private
 	 */
 	var _defaults = {
-			'format': 'text',	// The type of the expected output. Could be text, xml or json
+			'format': 'text',	// The type of the expected output. Can be text, xml or json
 			'async': true,		// If you need synchronous requests, set this option to false
 			'timeout': 30000,	// Set a timeout (in milliseconds) for the request
 			'endpoint': '',		// Set an entry endpoint for a store / query
 			'cacheable': true,	// If set to false, it will force queries to get data from server on every execution
 			'method': 'GET',	// HTTP request method
-			'expires': 5000,	// Set an expiration date (in milliseconds) for query results
+			'expires': 300000,	// Set an expiration date (in milliseconds) for a query results in case it is cacheable
 			'success': [],		// One or more functions to be called if the request succeeds
 			'error': [],		// One or more functions to be called if the request failed
 			'complete': [],		// One or more functions to be called after either success or error callbacks
@@ -184,6 +184,12 @@ var ElephantJS = (function () {
 	Query.prototype.executeQuery = function (objRecord, objSettings) {
 		// Settings given to execution are temporary and serve only the current execution:
 		var objTempSettings = _.defaults(objSettings, this.settings);
+		try {
+			objTempSettings.endpoint = _.template(objTempSettings.endpoint, objRecord.params);
+		}
+		catch (e) {
+			throw 'Missing endpoint parameters';
+		}
 
 		// Check if there is already record with the same parameters:
 		if (this.settings.cacheable === true) {
@@ -222,7 +228,7 @@ var ElephantJS = (function () {
 
 		function executeXHR(objRecord, objSettings) {
 			var self = this,
-				xhr = new XHR(_.defaults(objSettings, this.settings));
+				xhr = new XHR(_.defaults(objSettings, this.settings), objRecord.params);
 
 			objRecord.timestamps.sent = _.now();
 			xhr.execute(
@@ -320,8 +326,9 @@ var ElephantJS = (function () {
 	// </editor-fold>
 
 	// <editor-fold desc="XHR">
-	var XHR = function (settings) {
+	var XHR = function (objSettings, objParams) {
 		this.xhr = null;
+		this.params = objParams,
 		this.settings = {
 			async: true,
 			endpoint: '',
@@ -329,7 +336,7 @@ var ElephantJS = (function () {
 			method: 'GET'
 		};
 
-		this.init(settings);
+		this.init(objSettings);
 	};
 	XHR.prototype = (function() {
 			var bindFunction = function (caller, object) {
@@ -338,8 +345,20 @@ var ElephantJS = (function () {
 				};
 			},
 
+			serialize = function(objParams) {
+				var str = [];
+
+				for(var param in objParams)
+					if (objParams.hasOwnProperty(param)) {
+						str.push(encodeURIComponent(param) + "=" + encodeURIComponent(objParams[param]));
+					}
+				return str.join("&");
+			},
+
 			execute = function (fncSuccess, fncError, fncComplete) {
 				if (this.xhr !== undefined && this.endpoint !== '') {
+					var strParams = serialize(this.params);
+
 					// Synchronous requests must not set a timeout:
 					if (this.settings.async === true)
 						this.xhr.timeout = this.settings.timeout;
@@ -386,12 +405,22 @@ var ElephantJS = (function () {
 							this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 							this.xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 							this.xhr.setRequestHeader('Connection', 'close');
+							this.xhr.send(strParams);
 							break;
 						default:
-							this.xhr.open(this.settings.method, this.settings.endpoint, this.settings.async);
+							var strEndpoint = this.settings.endpoint;
+							if (strParams !== '' && strEndpoint.indexOf(strParams) < 0) {
+								if (strEndpoint.indexOf('?') >= 0) {
+									strEndpoint += '&' + strParams;
+								}
+								else {
+									strEndpoint += '?' + strParams;
+								}
+							}
+							this.xhr.open(this.settings.method, strEndpoint, this.settings.async);
+							this.xhr.send();
 							break;
 					}
-					this.xhr.send();
 				}
 			},
 
@@ -577,7 +606,10 @@ var ElephantJS = (function () {
 		// Get data store object:
 		var store = storage.getItem('id', strStoreID);
 		if (store === undefined) throw 'Store id could not be found';
-		// Create a new query object
+		// Create a new query object & inherit parent endpoint if needed:
+		if (objSettings.endpoint.indexOf('{{inherit}}') >= 0) {
+			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
+		}
 		var query = new Query(strID, _.defaults(objSettings, store.settings));
 		// Add the new query object to the store:
 		store.addItem(query);
@@ -636,6 +668,10 @@ var ElephantJS = (function () {
 		if (store === undefined) throw 'Store id could not be found';
 		var query = store.getItem('id', strID);
 		if (query === undefined) throw 'Query id could not be found';
+
+		if (objSettings.endpoint)
+			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
+
 		// Create a new record object and execute query:
 		var record = new Record(objParams, null);
 		query.executeQuery(record, objSettings);
@@ -685,6 +721,11 @@ var ElephantJS = (function () {
 
 		// Create a new stores storage:
 		storage = new Storage();
+
+		_.templateSettings = {
+			'interpolate': /{{([\s\S]+?)}}/g
+		};
+
 		console.log('ElephantJS is ready');
 	})();
 
