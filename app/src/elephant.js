@@ -314,7 +314,7 @@ var ElephantJS = (function () {
 	 * @constructor
 	 */
 	function Record (objParams, objOutput) {
-		this.id = _.uniqueId(),
+		this.id = _.uniqueId();
 		this.timestamps = {
 			created: _.now(),
 			sent: null,
@@ -328,7 +328,7 @@ var ElephantJS = (function () {
 	// <editor-fold desc="XHR">
 	var XHR = function (objSettings, objParams) {
 		this.xhr = null;
-		this.params = objParams,
+		this.params = objParams;
 		this.settings = {
 			async: true,
 			endpoint: '',
@@ -339,13 +339,7 @@ var ElephantJS = (function () {
 		this.init(objSettings);
 	};
 	XHR.prototype = (function() {
-			var bindFunction = function (caller, object) {
-				return function() {
-					return caller.apply(object, [object]);
-				};
-			},
-
-			serialize = function(objParams) {
+			var serialize = function(objParams) {
 				var str = [];
 
 				for(var param in objParams)
@@ -472,76 +466,79 @@ var ElephantJS = (function () {
 		var i, length;
 
 		for(var item in settings) {
-			switch (item) {
-				case 'async':
-					if(_.isBoolean(settings[item]) === false)
-						throw 'Settings are illegal: "async" must be a boolean';
-					break;
-				case 'format':
-					if(/xml|text|json|html/.test(settings[item]) === false)
-						throw 'Settings are illegal: "format" must be a either xml, json, html or text';
-					break;
-				case 'timeout':
-					if(_.isNumber(settings[item]) === false)
-						throw 'Settings are illegal: "timeout" must be a positive integer';
-					break;
-				case 'endpoint':
-					if(_.isString(settings[item]) === false)
-						throw 'Settings are illegal: "endpoint" must be a string';
-					break;
-				case 'cacheable':
-					if(_.isBoolean(settings[item]) === false)
-						throw 'Settings are illegal: "cacheable" must be a boolean';
-					break;
-				case 'expires':
-					if(_.isNumber(settings[item]) === false)
-						throw 'Settings are illegal: "expires" must be a positive integer';
-					break;
-				case 'method':
-					if(/GET|POST/.test(settings[item]) === false)
-						throw 'Settings are illegal: "method" must be a either GET or POST';
-					break;
-				case 'process':
-					if(_.isFunction(settings[item]) === false)
-						throw 'Settings are illegal: "process" callback must be a function';
-					break;
-				case 'success':
-					if(_.isArray(settings[item]) === false) {
+			if (settings.hasOwnProperty(item)) {
+				switch (item) {
+					case 'async':
+						if(_.isBoolean(settings[item]) === false)
+							throw 'Settings are illegal: "async" must be a boolean';
+						break;
+					case 'format':
+						if(/xml|text|json|html/.test(settings[item]) === false)
+							throw 'Settings are illegal: "format" must be a either xml, json, html or text';
+						break;
+					case 'timeout':
+						if(_.isNumber(settings[item]) === false)
+							throw 'Settings are illegal: "timeout" must be a positive integer';
+						break;
+					case 'endpoint':
+						if(_.isString(settings[item]) === false)
+							throw 'Settings are illegal: "endpoint" must be a string';
+						break;
+					case 'cacheable':
+						if(_.isBoolean(settings[item]) === false)
+							throw 'Settings are illegal: "cacheable" must be a boolean';
+						break;
+					case 'expires':
+						if(_.isNumber(settings[item]) === false)
+							throw 'Settings are illegal: "expires" must be a positive integer';
+						break;
+					case 'method':
+						if(/GET|POST/.test(settings[item]) === false)
+							throw 'Settings are illegal: "method" must be a either GET or POST';
+						break;
+					case 'process':
 						if(_.isFunction(settings[item]) === false)
-							throw 'Settings are illegal: "success" callbacks must be a function or an array of functions';
-					}
-					else {
-						for (i = 0, length = settings[item].length; i < length; i++) {
-							if(_.isFunction(settings[item][i]) === false)
+							throw 'Settings are illegal: "process" callback must be a function';
+						break;
+					case 'success':
+						if(_.isArray(settings[item]) === false) {
+							if(_.isFunction(settings[item]) === false)
 								throw 'Settings are illegal: "success" callbacks must be a function or an array of functions';
 						}
-					}
-					break;
-				case 'error':
-					if(_.isArray(settings[item]) === false) {
-						if(_.isFunction(settings[item]) === false)
-							throw 'Settings are illegal: "error" callbacks must be a function or an array of functions';
-					}
-					else {
-						for (i = 0, length = settings[item].length; i < length; i++) {
-							if(_.isFunction(settings[item][i]) === false)
+						else {
+							for (i = 0, length = settings[item].length; i < length; i++) {
+								if(_.isFunction(settings[item][i]) === false)
+									throw 'Settings are illegal: "success" callbacks must be a function or an array of functions';
+							}
+						}
+						break;
+					case 'error':
+						if(_.isArray(settings[item]) === false) {
+							if(_.isFunction(settings[item]) === false)
 								throw 'Settings are illegal: "error" callbacks must be a function or an array of functions';
 						}
-					}
-					break;
-				case 'complete':
-					if(_.isArray(settings[item]) === false) {
-						if(_.isFunction(settings[item]) === false)
-							throw 'Settings are illegal: "complete" callbacks must be a function or an array of functions';
-					}
-					else {
-						for (i = 0, length = settings[item].length; i < length; i++) {
-							if(_.isFunction(settings[item][i]) === false)
+						else {
+							for (i = 0, length = settings[item].length; i < length; i++) {
+								if(_.isFunction(settings[item][i]) === false)
+									throw 'Settings are illegal: "error" callbacks must be a function or an array of functions';
+							}
+						}
+						break;
+					case 'complete':
+						if(_.isArray(settings[item]) === false) {
+							if(_.isFunction(settings[item]) === false)
 								throw 'Settings are illegal: "complete" callbacks must be a function or an array of functions';
 						}
-					}
-					break;
+						else {
+							for (i = 0, length = settings[item].length; i < length; i++) {
+								if(_.isFunction(settings[item][i]) === false)
+									throw 'Settings are illegal: "complete" callbacks must be a function or an array of functions';
+							}
+						}
+						break;
+				}
 			}
+
 		}
 	}
 
