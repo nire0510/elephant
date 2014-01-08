@@ -1,31 +1,31 @@
 {
-  "name": "elephantjs",
-  "version": "0.1.0",
-  "authors": [
-    "Nir Elbaz <nire0510@gmail.com>"
-  ],
-  "description": "Data store mamanger for web applications",
-  "main": "/src/elephant.js",
-  "keywords": [
-    "data",
-    "store",
-    "json",
-    "manager",
-    "dal",
-    "cache"
-  ],
-  "license": "MIT",
-  "homepage": "http://nirelbaz.com",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "app/bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "lodash": "~2.4.1"
-  }
+	"name": "elephantjs",
+	"version": "0.1.0",
+	"authors": [
+		"Nir Elbaz <nire0510@gmail.com>"
+	],
+	"description": "Data store manager for web applications",
+	"main": "/app/src/elephant.js",
+	"keywords": [
+		"data",
+		"store",
+		"json",
+		"manager",
+		"dal",
+		"cache"
+	],
+	"license": "MIT",
+	"homepage": "http://nirelbaz.com",
+	"private": true,
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"app/bower_components",
+		"test",
+		"tests"
+	],
+	"dependencies": {
+		"lodash": "~2.4.1"
+	}
 }
