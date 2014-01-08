@@ -8,6 +8,7 @@
 </head>
 <body>
 <script>
+	// Create a new store for queries related to weather:
 	ElephantJS.create('Weather', {
 		'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
 		'format': 'json',
@@ -15,24 +16,36 @@
 			console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
 		}]
 	});
+	// Register a query which fetches weather by city name:
 	ElephantJS.register('Weather', 'ByCity', {
 		'endpoint': '{{inherit}}?q={{city}},{{county}}'
 	});
+	// Register a query which fetches weather by coordinates:
 	ElephantJS.register('Weather', 'ByCoords', {
 		'endpoint': '{{inherit}}?lat={{lat}}&lon={{lon}}'
 	});
+	// Execute the first query for London as location:
 	ElephantJS.execute('Weather', 'ByCity', {}, {
 		'city': 'London',
 		'county': 'uk'
 	});
+	// Execute the first query for Tel Aviv as location:
 	ElephantJS.execute('Weather', 'ByCity', {}, {
 		'city': 'Tel Aviv',
 		'county': 'il'
 	});
+	// Execute the second query:
 	ElephantJS.execute('Weather', 'ByCoords', {}, {
 		'lat': 41.881944,
 		'lon': -87.627778
 	});
+	// Execute AGAIN the first query for London as location, to check the caching:
+	window.setTimeout(function () {
+		ElephantJS.execute('Weather', 'ByCity', {}, {
+			'city': 'London',
+			'county': 'uk'
+		});
+	}, 5000);
 </script>
 </body>
 </html>
