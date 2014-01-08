@@ -27,16 +27,16 @@ JavaScript object:
 
 Methods
 -------
-* `ElephantJS.create({string} storeId, {object} settings)`
-* `ElephantJS.destroy({string} storeId)`
-* `ElephantJS.destroyAll()`
-* `ElephantJS.countStores()`
-* `ElephantJS.register({string} storeId, {string} queryId, {object} settings)`
-* `ElephantJS.unregister({string} storeId, {string} queryId)`
-* `ElephantJS.unregisterAll({string} storeId)`
-* `ElephantJS.countQueries({string} storeId)`
-* `ElephantJS.execute({string} storeId, {string} queryId, {object} settings, {object} params)`
-* `ElephantJS.countRecords({string} storeId, {string} queryId)`
+* `ElephantJS.create({string} storeId, {object} settings)` - Creates a new store in which data objects and queries are stored and share the same settings
+* `ElephantJS.destroy({string} storeId)` - Removes an existing store totally, including its settings, queries & data objects
+* `ElephantJS.destroyAll()` - Removes all stores totally, including its settings, queries & data objects
+* `ElephantJS.countStores()` - Counts all stores in storage
+* `ElephantJS.register({string} storeId, {string} queryId, {object} settings)` - Adds a new query to a store
+* `ElephantJS.unregister({string} storeId, {string} queryId)` - Removes a query from a store
+* `ElephantJS.unregisterAll({string} storeId)` - Removes all queries from a store
+* `ElephantJS.countQueries({string} storeId)` - Counts all queries in a store
+* `ElephantJS.execute({string} storeId, {string} queryId, {object} settings, {object} params)` - Executes a query from a specific data store and stores the output in a Record object
+* `ElephantJS.countRecords({string} storeId, {string} queryId)` - Counts all records in a query
 
 How To Use
 ----------
