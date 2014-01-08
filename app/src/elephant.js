@@ -289,7 +289,9 @@ var ElephantJS = (function () {
 				},
 				// Complete callbacks:
 				function (response) {
-					objRecord.timestamps.received = _.now();
+					if (objRecord !== null) {
+						objRecord.timestamps.received = _.now();
+					}
 
 					var callbacks = objSettings.complete;
 					if (typeof(callbacks) === 'function') {
