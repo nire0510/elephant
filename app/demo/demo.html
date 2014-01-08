@@ -14,6 +14,9 @@
 		'format': 'json',
 		'success': [function (data) {
 			console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
+		}],
+		'error': [function (xhr) {
+			console.error('An error has occurred while trying to fetch');
 		}]
 	});
 	// Register a query which fetches weather by city name:
