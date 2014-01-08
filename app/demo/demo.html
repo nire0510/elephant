@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<script src="../bower_components/lodash/dist/lodash.compat.min.js"></script>
+	<script src="../src/elephant.js"></script>
+</head>
+<body>
+<script>
+	ElephantJS.create('Weather', {
+		'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
+		'format': 'json',
+		'success': [function (data) {
+			console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
+		}]
+	});
+	ElephantJS.register('Weather', 'ByCity', {
+		'endpoint': '{{inherit}}?q={{city}},{{county}}'
+	});
+	ElephantJS.register('Weather', 'ByCoords', {
+		'endpoint': '{{inherit}}?lat={{lat}}&lon={{lon}}'
+	});
+	ElephantJS.execute('Weather', 'ByCity', {}, {
+		'city': 'London',
+		'county': 'uk'
+	});
+	ElephantJS.execute('Weather', 'ByCity', {}, {
+		'city': 'Tel Aviv',
+		'county': 'il'
+	});
+	ElephantJS.execute('Weather', 'ByCoords', {}, {
+		'lat': 41.881944,
+		'lon': -87.627778
+	});
+</script>
+</body>
+</html>
