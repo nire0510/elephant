@@ -13,27 +13,17 @@ Every time you execute a query, the returned data is stored in a new record obje
 Settings
 --------
 JavaScript object:
-* `format` {enum} - The type of the expected output. Can be either , xml or json
- Default: text
-* `async` {boolean} - If you need synchronous requests, set this option to false
- Default: true
-* `timeout` {number} - Set a timeout (in milliseconds) for the request
- Default: 30000
+* `format` {enum} - The type of the expected output. Can be either , xml or json. Default: text
+* `async` {boolean} - If you need synchronous requests, set this option to false. Default: true
+* `timeout` {number} - Set a timeout (in milliseconds) for the request. Default: 30000
 * `endpoint` {string} - Set an entry endpoint for a store / query
-* `cacheable` {boolean} - If set to false, it will force queries to get data from server on every execution
- Default: true
-* `method` {enum} - HTTP request method. Can be GET or POST
- Default: GET
-* `expires` {number} - Set an expiration date (in milliseconds) for a query results in case it is cacheable
- Default: 300000 (5 mins)
-* `success` {function array} - One or more functions to be called if the request succeeds
- Default: none
-* `error` {function array} - One or more functions to be called if the request failed
- Default: none
-* `complete` {function array} - One or more functions to be called after either success or error callbacks
- Default: none
-* `process` {function} - A function to be called if the request succeeds in order to manipulate output
- Default: none
+* `cacheable` {boolean} - If set to false, it will force queries to get data from server on every execution. Default: true
+* `method` {enum} - HTTP request method. Can be GET or POST. Default: GET
+* `expires` {number} - Set an expiration date (in milliseconds) for a query results in case it is cacheable. Default: 300000 (5 mins)
+* `success` {function array} - One or more functions to be called if the request succeeds. Default: none
+* `error` {function array} - One or more functions to be called if the request failed. Default: none
+* `complete` {function array} - One or more functions to be called after either success or error callbacks. Default: none
+* `process` {function} - A function to be called if the request succeeds in order to manipulate output. Default: none
 
 Methods
 -------
