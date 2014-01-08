@@ -1,17 +1,14 @@
 {
 	"name": "elephantjs",
 	"version": "0.1.0",
-	"description": "Data store mamanger for web applications",
-	"main": "/src/elephant.js",
+	"description": "Data store manager for web applications",
+	"main": "/app/src/elephant.js",
 	"dependencies": {
 		"grunt": "~0.4.1"
 	},
 	"devDependencies": {
 		"grunt": "~0.4.1",
 		"grunt-contrib-uglify": "~0.2.4"
-	},
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [
 		"data",
@@ -24,7 +21,7 @@
 	"author": {
 		"name": "Nir Elbaz"
 	},
-	"license": "BSD-2-Clause",
+	"license": "MIT",
 	"directories": {
 		"test": "test"
 	},
