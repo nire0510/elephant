@@ -8,7 +8,7 @@
 /**
  * @namespace
  */
-var ElephantJS = (function () {
+var Elephant = (function () {
 	'use strict';
 
 	/**
@@ -395,6 +395,7 @@ var ElephantJS = (function () {
 						}
 					};
 
+
 					switch (this.settings.method) {
 						case 'POST':
 							this.xhr.open(this.settings.method, this.settings.endpoint, this.settings.async);
@@ -606,10 +607,10 @@ var ElephantJS = (function () {
 		var store = storage.getItem('id', strStoreID);
 		if (store === undefined) throw 'Store id could not be found';
 		// Create a new query object & inherit parent endpoint if needed:
+		var query = new Query(strID, _.defaults(objSettings, store.settings));
 		if (objSettings.endpoint.indexOf('{{inherit}}') >= 0) {
 			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
 		}
-		var query = new Query(strID, _.defaults(objSettings, store.settings));
 		// Add the new query object to the store:
 		store.addItem(query);
 	}
@@ -740,8 +741,6 @@ var ElephantJS = (function () {
 		countQueries: countQueries,
 		execute: executeQuery,
 
-		countRecords: countRecords,
-
-		print: function () { console.log( storage ); }
+		countRecords: countRecords
 	};
 })(undefined);
