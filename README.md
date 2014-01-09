@@ -1,7 +1,7 @@
 elephant.js
 ===========
 
-Smart client side data objects manager
+Smart objects store library
 
 Introduction
 ------------
@@ -44,3 +44,60 @@ How To Use
 2. Register one or more queries by providing the store name it is registered in, a query name & settings to each query.
  If you don't provide settings to a query, it inherits the settings of the store it is registered in
 3. Execute a query
+
+Sample:
+-------
+1. Create a new store for queries related to weather:
+
+```
+Elephant.create('Weather', {
+	'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
+	'format': 'json',
+	'success': [function (data) {
+		console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
+	}],
+	'error': [function (xhr) {
+		console.error('An error has occurred while trying to fetch');
+	}]
+});
+```
+
+2. Register a query which fetches weather by city name:
+
+`Elephant.register('Weather', 'getByCity');`
+
+3. Register a query which fetches weather by coordinates:
+
+`Elephant.register('Weather', 'getByCoords');`
+
+3. Execute the first query for London as location:
+
+```
+Elephant.execute('Weather', 'getByCity', {}, {
+	'q': 'London, uk'
+});
+```
+4. Execute the first query for Tel Aviv as location:
+
+```
+Elephant.execute('Weather', 'getByCity', {}, {
+	'q': 'Tel Aviv, il'
+});
+```
+5. Execute the second query:
+
+```
+Elephant.execute('Weather', 'getByCoords', {}, {
+	'lat': 41.881944,
+	'lon': -87.627778
+});
+```
+6. Execute AGAIN the first query for London as location, to check the caching:
+
+```
+window.setTimeout(function () {
+	Elephant.execute('Weather', 'getByCity', {}, {
+		'q': 'London, uk'
+	});
+}, 5000);
+```
