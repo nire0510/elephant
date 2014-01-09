@@ -1,7 +1,7 @@
 elephant.js
 ===========
 
-Smart objects store library
+Smart object store library
 
 Introduction
 ------------
