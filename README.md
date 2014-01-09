@@ -48,8 +48,8 @@ How To Use
 
 Sample:
 -------
-1. In your main HTML file, add a script reference to elephant.min.js and lodash.min.js
-2. Create a new store for queries related to weather:
+* In your main HTML file, add a script reference to elephant.min.js and lodash.min.js
+* Create a new store for queries related to weather:
 
 ```javascript
 Elephant.create('Weather', {
@@ -64,33 +64,33 @@ Elephant.create('Weather', {
 });
 ```
 
-3. Register a query which fetches weather by city name:
+* Register a query which fetches weather by city name:
 
 ```javascript
 Elephant.register('Weather', 'getByCity');
 ```
 
-4. Register a query which fetches weather by coordinates:
+* Register a query which fetches weather by coordinates:
 
 ```javascript
 Elephant.register('Weather', 'getByCoords');
 ```
 
-5. Execute the first query for London as location:
+* Execute the first query for London as location:
 
 ```javascript
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'London, uk'
 });
 ```
-6. Execute the first query for Tel Aviv as location:
+* Execute the first query for Tel Aviv as location:
 
 ```javascript
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'Tel Aviv, il'
 });
 ```
-7. Execute the second query:
+* Execute the second query:
 
 ```javascript
 Elephant.execute('Weather', 'getByCoords', {}, {
@@ -98,7 +98,7 @@ Elephant.execute('Weather', 'getByCoords', {}, {
 	'lon': -87.627778
 });
 ```
-8. Execute AGAIN the first query for London as location, to check the caching:
+* Execute AGAIN the first query for London as location, to check the caching:
 
 ```javascript
 window.setTimeout(function () {
