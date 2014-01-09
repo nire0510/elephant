@@ -1,7 +1,7 @@
 elephant.js
 ===========
 
-Smart object store library
+Data store manager for web applications
 
 Introduction
 ------------
