@@ -9,7 +9,7 @@
 <body>
 <script>
 	// Create a new store for queries related to weather:
-	ElephantJS.create('Weather', {
+	Elephant.create('Weather', {
 		'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
 		'format': 'json',
 		'success': [function (data) {
@@ -19,34 +19,29 @@
 			console.error('An error has occurred while trying to fetch');
 		}]
 	});
+
 	// Register a query which fetches weather by city name:
-	ElephantJS.register('Weather', 'ByCity', {
-		'endpoint': '{{inherit}}?q={{city}},{{county}}'
-	});
+	Elephant.register('Weather', 'getByCity');
 	// Register a query which fetches weather by coordinates:
-	ElephantJS.register('Weather', 'ByCoords', {
-		'endpoint': '{{inherit}}?lat={{lat}}&lon={{lon}}'
-	});
+	Elephant.register('Weather', 'getByCoords');
+
 	// Execute the first query for London as location:
-	ElephantJS.execute('Weather', 'ByCity', {}, {
-		'city': 'London',
-		'county': 'uk'
+	Elephant.execute('Weather', 'getByCity', {}, {
+		'q': 'London, uk'
 	});
 	// Execute the first query for Tel Aviv as location:
-	ElephantJS.execute('Weather', 'ByCity', {}, {
-		'city': 'Tel Aviv',
-		'county': 'il'
+	Elephant.execute('Weather', 'getByCity', {}, {
+		'q': 'Tel Aviv, il'
 	});
 	// Execute the second query:
-	ElephantJS.execute('Weather', 'ByCoords', {}, {
+	Elephant.execute('Weather', 'getByCoords', {}, {
 		'lat': 41.881944,
 		'lon': -87.627778
 	});
 	// Execute AGAIN the first query for London as location, to check the caching:
 	window.setTimeout(function () {
-		ElephantJS.execute('Weather', 'ByCity', {}, {
-			'city': 'London',
-			'county': 'uk'
+		Elephant.execute('Weather', 'getByCity', {}, {
+			'q': 'London, uk'
 		});
 	}, 5000);
 </script>
