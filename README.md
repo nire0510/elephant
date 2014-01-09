@@ -49,7 +49,7 @@ How To Use
 Sample:
 -------
 1. In your main HTML file, add a script reference to elephant.min.js and lodash.min.js
-1. Create a new store for queries related to weather:
+2. Create a new store for queries related to weather:
 
 ```
 Elephant.create('Weather', {
@@ -64,29 +64,29 @@ Elephant.create('Weather', {
 });
 ```
 
-2. Register a query which fetches weather by city name:
+3. Register a query which fetches weather by city name:
 
 `Elephant.register('Weather', 'getByCity');`
 
-3. Register a query which fetches weather by coordinates:
+4. Register a query which fetches weather by coordinates:
 
 `Elephant.register('Weather', 'getByCoords');`
 
-3. Execute the first query for London as location:
+5. Execute the first query for London as location:
 
 ```
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'London, uk'
 });
 ```
-4. Execute the first query for Tel Aviv as location:
+6. Execute the first query for Tel Aviv as location:
 
 ```
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'Tel Aviv, il'
 });
 ```
-5. Execute the second query:
+7. Execute the second query:
 
 ```
 Elephant.execute('Weather', 'getByCoords', {}, {
@@ -94,7 +94,7 @@ Elephant.execute('Weather', 'getByCoords', {}, {
 	'lon': -87.627778
 });
 ```
-6. Execute AGAIN the first query for London as location, to check the caching:
+8. Execute AGAIN the first query for London as location, to check the caching:
 
 ```
 window.setTimeout(function () {
