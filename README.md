@@ -51,7 +51,7 @@ Sample:
 1. In your main HTML file, add a script reference to elephant.min.js and lodash.min.js
 2. Create a new store for queries related to weather:
 
-```
+```javascript
 Elephant.create('Weather', {
 	'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
 	'format': 'json',
@@ -66,29 +66,33 @@ Elephant.create('Weather', {
 
 3. Register a query which fetches weather by city name:
 
-`Elephant.register('Weather', 'getByCity');`
+```javascript
+Elephant.register('Weather', 'getByCity');
+```
 
 4. Register a query which fetches weather by coordinates:
 
-`Elephant.register('Weather', 'getByCoords');`
+```javascript
+Elephant.register('Weather', 'getByCoords');
+```
 
 5. Execute the first query for London as location:
 
-```
+```javascript
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'London, uk'
 });
 ```
 6. Execute the first query for Tel Aviv as location:
 
-```
+```javascript
 Elephant.execute('Weather', 'getByCity', {}, {
 	'q': 'Tel Aviv, il'
 });
 ```
 7. Execute the second query:
 
-```
+```javascript
 Elephant.execute('Weather', 'getByCoords', {}, {
 	'lat': 41.881944,
 	'lon': -87.627778
@@ -96,7 +100,7 @@ Elephant.execute('Weather', 'getByCoords', {}, {
 ```
 8. Execute AGAIN the first query for London as location, to check the caching:
 
-```
+```javascript
 window.setTimeout(function () {
 	Elephant.execute('Weather', 'getByCity', {}, {
 		'q': 'London, uk'
