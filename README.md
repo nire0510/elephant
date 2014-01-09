@@ -40,13 +40,15 @@ Methods
 
 How To Use
 ----------
-1. Create one or more stores objects by providing a name & settings to each store
-2. Register one or more queries by providing the store name it is registered in, a query name & settings to each query.
+1. Include a script reference to elephant.min.js and lodash.min.js files. For old browsers support, add a reference to lodash.compat.min.js instead of lodash.min.js.
+2. Create one or more stores objects by providing a name & settings to each store
+3. Register one or more queries by providing the store name it is registered in, a query name & settings to each query.
  If you don't provide settings to a query, it inherits the settings of the store it is registered in
-3. Execute a query
+4. Execute a query
 
 Sample:
 -------
+1. In your main HTML file, add a script reference to elephant.min.js and lodash.min.js
 1. Create a new store for queries related to weather:
 
 ```
@@ -101,3 +103,7 @@ window.setTimeout(function () {
 	});
 }, 5000);
 ```
+
+Dependencies
+------------
+The fabulous [Lodash](http://lodash.com/) library
