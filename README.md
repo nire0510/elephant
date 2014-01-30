@@ -1,11 +1,11 @@
-elephant.js
-===========
+elephant
+========
 
 Data store manager for web applications
 
 Introduction
 ------------
-elephant.js is a javascript library that can help you manage your web application data by providing built-in AJAX mechanism and another one for storing and managing the incoming data.
+elephant is a javascript library that can help you manage your web application data by providing built-in AJAX mechanism and another one for storing and managing the incoming data.
 It consists of stores, queries and records objects:
 Each store contains one or more related queries that share the same settings.
 Every time you execute a query, the returned data is stored in a new record object which then can be accessed whenever needed.
@@ -27,16 +27,16 @@ JavaScript object:
 
 Methods
 -------
-* `ElephantJS.create({string} storeId[, {object} settings])` - Creates a new store in which data objects and queries are stored and share the same settings
-* `ElephantJS.destroy({string} storeId)` - Removes an existing store totally, including its settings, queries & data objects
-* `ElephantJS.destroyAll()` - Removes all stores totally, including its settings, queries & data objects
-* `ElephantJS.countStores()` - Counts all stores in storage
-* `ElephantJS.register({string} storeId, {string} queryId[, {object} settings])` - Adds a new query to a store
-* `ElephantJS.unregister({string} storeId, {string} queryId)` - Removes a query from a store
-* `ElephantJS.unregisterAll({string} storeId)` - Removes all queries from a store
-* `ElephantJS.countQueries({string} storeId)` - Counts all queries in a store
-* `ElephantJS.execute({string} storeId, {string} queryId[, {object} settings, {object} params])` - Executes a query from a specific data store and stores the output in a Record object
-* `ElephantJS.countRecords({string} storeId, {string} queryId)` - Counts all records in a query
+* `Elephant.create({string} storeId[, {object} settings])` - Creates a new store in which data objects and queries are stored and share the same settings
+* `Elephant.destroy({string} storeId)` - Removes an existing store totally, including its settings, queries & data objects
+* `Elephant.destroyAll()` - Removes all stores totally, including its settings, queries & data objects
+* `Elephant.countStores()` - Counts all stores in storage
+* `Elephant.register({string} storeId, {string} queryId[, {object} settings])` - Adds a new query to a store
+* `Elephant.unregister({string} storeId, {string} queryId)` - Removes a query from a store
+* `Elephant.unregisterAll({string} storeId)` - Removes all queries from a store
+* `Elephant.countQueries({string} storeId)` - Counts all queries in a store
+* `Elephant.execute({string} storeId, {string} queryId[, {object} settings, {object} params])` - Executes a query from a specific data store and stores the output in a Record object
+* `Elephant.countRecords({string} storeId, {string} queryId)` - Counts all records in a query
 
 How To Use
 ----------
