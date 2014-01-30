@@ -13,6 +13,7 @@ Every time you execute a query, the returned data is stored in a new record obje
 Settings
 --------
 JavaScript object:
+
 * `format` {enum} - The type of the expected output. Can be either , xml or json. Default: text
 * `async` {boolean} - If you need synchronous requests, set this option to false. Default: true
 * `timeout` {number} - Set a timeout (in milliseconds) for the request. Default: 30000
@@ -24,19 +25,20 @@ JavaScript object:
 * `error` {function array} - One or more functions to be called if the request failed. Default: none
 * `complete` {function array} - One or more functions to be called after either success or error callbacks. Default: none
 * `process` {function} - A function to be called if the request succeeds in order to manipulate output. Default: none
+* `params` {object} - HTTP request parameters
 
 Methods
 -------
 * `Elephant.create({string} storeId[, {object} settings])` - Creates a new store in which data objects and queries are stored and share the same settings
 * `Elephant.destroy({string} storeId)` - Removes an existing store totally, including its settings, queries & data objects
 * `Elephant.destroyAll()` - Removes all stores totally, including its settings, queries & data objects
-* `Elephant.countStores()` - Counts all stores in storage
+* `Elephant.count()` - Counts all stores in storage
 * `Elephant.register({string} storeId, {string} queryId[, {object} settings])` - Adds a new query to a store
 * `Elephant.unregister({string} storeId, {string} queryId)` - Removes a query from a store
 * `Elephant.unregisterAll({string} storeId)` - Removes all queries from a store
-* `Elephant.countQueries({string} storeId)` - Counts all queries in a store
-* `Elephant.execute({string} storeId, {string} queryId[, {object} settings, {object} params])` - Executes a query from a specific data store and stores the output in a Record object
-* `Elephant.countRecords({string} storeId, {string} queryId)` - Counts all records in a query
+* `Elephant.count({string} storeId)` - Counts all queries in a store
+* `Elephant.execute({string} storeId, {string} queryId[, {object} settings])` - Executes a query from a specific data store and stores the output in a Record object
+* `Elephant.count({string} storeId, {string} queryId)` - Counts all records in a query
 
 How To Use
 ----------
@@ -79,31 +81,39 @@ Elephant.register('Weather', 'getByCoords');
 * Execute the first query for London as location:
 
 ```javascript
-Elephant.execute('Weather', 'getByCity', {}, {
-	'q': 'London, uk'
+Elephant.execute('Weather', 'getByCity', {
+	'params': {
+		'q': 'London, uk'
+  	}
 });
 ```
 * Execute the first query for Tel Aviv as location:
 
 ```javascript
-Elephant.execute('Weather', 'getByCity', {}, {
-	'q': 'Tel Aviv, il'
+Elephant.execute('Weather', 'getByCity', {
+	'params': {
+		'q': 'Tel Aviv, il'
+  	}
 });
 ```
 * Execute the second query:
 
 ```javascript
-Elephant.execute('Weather', 'getByCoords', {}, {
-	'lat': 41.881944,
-	'lon': -87.627778
+Elephant.execute('Weather', 'getByCoords', {
+	'params': {
+		'lat': 41.881944,
+        'lon': -87.627778
+  	}
 });
 ```
 * Execute AGAIN the first query for London as location, to check the caching:
 
 ```javascript
 window.setTimeout(function () {
-	Elephant.execute('Weather', 'getByCity', {}, {
-		'q': 'London, uk'
+	Elephant.execute('Weather', 'getByCity', {
+		'params': {
+        	'q': 'London, uk'
+    	}
 	});
 }, 5000);
 ```
