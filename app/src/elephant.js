@@ -1,6 +1,6 @@
 /**
- * ElephantJS - Smart client side data objects manager
- * @version 0.1.0
+ * Elephant - Smart client side data objects manager
+ * @version 0.1.1
  * @author Nir Elbaz
  * @requires _ http://lodash.com
  */
@@ -8,7 +8,7 @@
 /**
  * @namespace
  */
-var Elephant = (function () {
+(function (window) {
 	'use strict';
 
 	/**
@@ -27,7 +27,8 @@ var Elephant = (function () {
 			'success': [],		// One or more functions to be called if the request succeeds
 			'error': [],		// One or more functions to be called if the request failed
 			'complete': [],		// One or more functions to be called after either success or error callbacks
-			'process': null		// A function to be called if the request succeeds in order to manipulate output
+			'process': null,	// A function to be called if the request succeeds in order to manipulate output
+			'params': {}		// Request parameters
 		},
 		/**
 		 * Master collection of all stores (singleton)
@@ -41,7 +42,7 @@ var Elephant = (function () {
 	 * A parent object
 	 * @class Core
 	 * @property {String} strID Object unique id
-	 * @property {Object} [objSettings] Object settings
+	 * @property {Object} objSettings Object settings
 	 * @returns {Core}
 	 * @constructor
 	 */
@@ -77,7 +78,7 @@ var Elephant = (function () {
 
 		/**
 		 * Removes all items in an object's collection
-		 * @returns {Integer} Number of items in collection
+		 * @returns {Number} Number of items in collection
 		 */
 		removeAllItems: function () {
 			this.items = [];
@@ -150,7 +151,7 @@ var Elephant = (function () {
 	 */
 	function Storage () {
 		// Call parent's constructor:
-		Core.call(this, 'ElephantJS', {});
+		Core.call(this, 'Elephant', {});
 	}
 	Storage.prototype = _.create(Core.prototype, { 'constructor': Storage });
 
@@ -546,14 +547,6 @@ var Elephant = (function () {
 	}
 
 	/**
-	 * Counts all stores in storage
-	 * @returns {Number} Number of stores
-	 */
-	function countStores () {
-		return (storage.countItems());
-	}
-
-	/**
 	 * Creates a new store in which data objects and queries are stored and share the same settings.
 	 * @param strID {String} id New store id
 	 * @param objSettings {Object} settings New store settings. Will be used as default settings for all of its items
@@ -593,7 +586,7 @@ var Elephant = (function () {
 	 * Adds a new query to a store
 	 * @param {String} strStoreID Store id to which to add the new query
 	 * @param {String} strID New query id
-	 * @param {Object} objSettings New query settings. Will be used as default settings for all of its items
+	 * @param {Object} [objSettings] New query settings. Will be used as default settings for all of its items
 	 */
 	function registerQuery (strStoreID, strID, objSettings) {
 		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
@@ -647,18 +640,15 @@ var Elephant = (function () {
 
 	/**
 	 * Executes a query from a specific data store and stores the output in a Record object
-	 * @param {String} strStoreID
-	 * @param {String} strID
-	 * @param {Object} objSettings Temporary query settings for current execution only. If set, it will override the default query settings
-	 * @param objParams
+	 * @param {String} strStoreID Store id which the query belongs to
+	 * @param {String} strQueryID Query id to execute
+	 * @param {Object} [objSettings] Temporary query settings for current execution only. If set, it will override the default query settings
 	 */
-	function executeQuery (strStoreID, strID, objSettings, objParams) {
+	function executeQuery (strStoreID, strQueryID, objSettings) {
 		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-		if (!_.isString(strID) || _.isEmpty(strID)) throw 'Query id is illegal';
+		if (!_.isString(strQueryID) || _.isEmpty(strQueryID)) throw 'Query id is illegal';
 		if (objSettings === undefined) objSettings = {};
 		if (!_.isPlainObject(objSettings)) throw 'Settings are illegal';
-		if (objParams === undefined) objParams = {};
-		if (!_.isPlainObject(objParams)) throw 'Parameters are illegal';
 
 		// Validate settings:
 		validateSettings(objSettings);
@@ -666,49 +656,55 @@ var Elephant = (function () {
 		// Get data store and query objects:
 		var store = storage.getItem('id', strStoreID);
 		if (store === undefined) throw 'Store id could not be found';
-		var query = store.getItem('id', strID);
+		var query = store.getItem('id', strQueryID);
 		if (query === undefined) throw 'Query id could not be found';
 
 		if (objSettings.endpoint)
 			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
 
 		// Create a new record object and execute query:
-		var record = new Record(objParams, null);
+		var record = new Record(objSettings.params || {}, null);
 		query.executeQuery(record, objSettings);
 	}
 
 	/**
-	 * Counts all queries in a store
-	 * @param strStoreID {String} Store id of which to count all queries
-	 * @returns {Number} Number of queries
+	 * Counts all stores, queries or records
+	 * @param {String} [strStoreID] Store id
+	 * @param {String} [strQueryID] Query id. If specified then previous param is required
+	 * @returns {Number} Number of stores if no parameter was specified or number of queries if storeId was specified, otherwise - number of records
 	 */
-	function countQueries (strStoreID) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
+	function count (strStoreID, strQueryID) {
+		var intCount = 0,
+			store,
+			query;
 
-		// Get data store object:
-		var store = storage.getItem('id', strStoreID);
-		if (store === undefined) throw 'Store id could not be found';
-
-		return(store.countItems());
-	}
-
-	/**
-	 * Counts all records in a query
-	 * @param strStoreID {String} Store id to which the query belongs
-	 * @param strQueryID {String} Query id of which to count all records
-	 * @returns {Number} Number of queries
-	 */
-	function countRecords (strStoreID, strQueryID) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-		if (!_.isString(strQueryID) || _.isEmpty(strQueryID)) throw 'Query id is illegal';
-
-		// Get data store and query objects:
-		var store = storage.getItem('id', strStoreID);
-		if (store === undefined) throw 'Store id could not be found';
-		var query = store.getItem('id', strQueryID);
-		if (query === undefined) throw 'Query id could not be found';
-
-		return(query.countItems());
+		switch (_.size(arguments)) {
+			case 0:	// Count stores
+				intCount = storage.countItems();
+				break;
+			case 1:	// Count queries
+				// Validate input:
+				if (!_.isString(strStoreID)) throw 'Store id is illegal';
+				// Get store:
+				store = storage.getItem('id', strStoreID);
+				if (store === undefined) throw 'Store id could not be found';
+				intCount = store.countItems();
+				break;
+			case 2:	// Count records
+				// Validate input:
+				if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
+				if (!_.isString(strQueryID) || _.isEmpty(strQueryID)) throw 'Query id is illegal';
+				// Get store:
+				store = storage.getItem('id', strStoreID);
+				if (store === undefined) throw 'Store id could not be found';
+				// Get query of store:
+				query = store.getItem('id', strQueryID);
+				if (query === undefined) throw 'Query id could not be found';
+				intCount = query.countItems();
+				break
+		}
+		// Return number of items:
+		return(intCount);
 	}
 	// </editor-fold>
 
@@ -719,6 +715,19 @@ var Elephant = (function () {
 		// Check if lodash loaded:
 		if (typeof(_) !== 'function') throw 'lodash library is required';
 
+		window.Elephant = window.Elephant || {
+			create: createStore,
+			destroy: destroyStore,
+			destroyAll: destroyAll,
+
+			register: registerQuery,
+			unregister: unregisterQuery,
+			unregisterAll: unregisterAll,
+			execute: executeQuery,
+
+			count: count
+		};
+
 		// Create a new stores storage:
 		storage = new Storage();
 
@@ -726,21 +735,6 @@ var Elephant = (function () {
 			'interpolate': /{{([\s\S]+?)}}/g
 		};
 
-		console.log('ElephantJS is ready');
+		console.log('Elephant is ready');
 	})();
-
-	return {
-		create: createStore,
-		destroy: destroyStore,
-		destroyAll: destroyAll,
-		countStores: countStores,
-
-		register: registerQuery,
-		unregister: unregisterQuery,
-		unregisterAll: unregisterAll,
-		countQueries: countQueries,
-		execute: executeQuery,
-
-		countRecords: countRecords
-	};
-})(undefined);
+})(window, undefined);
