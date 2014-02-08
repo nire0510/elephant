@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 </head>
 <body>
-<h1>Wrather Forecast</h1>
+<h1>Elephant Demo: Weather Forecast</h1>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="js/libs/jquery.min.js"><\/script>')</script>
 <script src="../src/elephant.js"></script>
@@ -18,7 +18,7 @@
 		'cache': true,
 		'success': function (data) {
 			var paragraph = document.createElement('p');
-			paragraph.innerHTML = 'The weather in <b>' + data.name + '</b>: ' + data.weather[0].description;
+			paragraph.innerHTML = '&bull; The weather in <b>' + data.name + '</b>: ' + data.weather[0].description;
 			document.body.appendChild(paragraph);
 			console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
 		}
@@ -39,9 +39,14 @@
 				'data': {
 					'q': 'Tel Aviv, il'
 				}
+			}),
+			Elephant.fetch('Weather', 'getByCity', {
+				'data': {
+					'q': 'Chicago, us'
+				}
 			})
 			).done(function(jqxhr1, jqxhr2) {
-				console.log('Both requests completed successfully!');
+				console.log('All requests completed successfully!');
 			}).then(function () {
 
 			});
