@@ -42,13 +42,15 @@ Methods
 * `Elephant.count({string} storeID)` - Counts all queries in a data store
 * `Elephant.fetch({string} storeID, {string} queryID[, {object} settings])` - Executes a query from a specific data store asynchronously and stores the output in a Record object. If `cache` setting is set to `true` and query was already executed once, data is served from cache instead of XHR request execution
 * `Elephant.count({string} storeID, {string} queryID)` - Counts all records in a query
+* `Elephant.settings({string} storeID[, {string} queryID])` - Returns settings of a store or a query
 
 How To Use
 ----------
 1. Include a script reference to elephant.min.js and jquery.min.js (>= 1.5) files
 2. Create one or more data stores objects by providing a name & settings to each data store
 3. Register one or more queries by providing the data store name it is registered in, as well as a query name & settings to each query.
-   If you don't provide settings to a query, it inherits the settings of the data store it is registered in
+   If you don't provide settings to a query, it inherits the settings of the data store it is registered in;
+   In addition, you can modify parent's settings by using `Elephant.settings(...)` method.
 4. Execute a query. You can either provide callbacks or use jQuery deferred object to gain control the over the async behavior of the XHR
 
 Sample (using callbacks):
