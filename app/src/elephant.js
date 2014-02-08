@@ -1,34 +1,24 @@
 /**
  * Elephant - Smart client side data objects manager
- * @version 0.1.1
+ * @version 0.2.0
  * @author Nir Elbaz
- * @requires _ http://lodash.com
+ * @requires $ http://jquery.com
  */
 
 /**
  * @namespace
  */
-(function (window) {
+(function (window, $, undefined) {
 	'use strict';
 
 	/**
-	 * Default settings
-	 * @type {{format: string, async: boolean, timeout: number, endpoint: string, cacheable: boolean, method: string, expires: number, success: Array, error: Array, complete: Array, process: null}}
+	 *
+	 * @type {{expires: number, process: null}}
 	 * @private
 	 */
 	var _defaults = {
-			'format': 'text',	// The type of the expected output. Can be text, xml or json
-			'async': true,		// If you need synchronous requests, set this option to false
-			'timeout': 30000,	// Set a timeout (in milliseconds) for the request
-			'endpoint': '',		// Set an entry endpoint for a store / query
-			'cacheable': true,	// If set to false, it will force queries to get data from server on every execution
-			'method': 'GET',	// HTTP request method
 			'expires': 300000,	// Set an expiration date (in milliseconds) for a query results in case it is cacheable
-			'success': [],		// One or more functions to be called if the request succeeds
-			'error': [],		// One or more functions to be called if the request failed
-			'complete': [],		// One or more functions to be called after either success or error callbacks
-			'process': null,	// A function to be called if the request succeeds in order to manipulate output
-			'params': {}		// Request parameters
+			'process': null	// A function to be called if the request succeeds in order to manipulate output data
 		},
 		/**
 		 * Master collection of all stores (singleton)
@@ -47,12 +37,12 @@
 	 * @constructor
 	 */
 	function Core (strID, objSettings) {
-		if (!_.isString(strID) || _.isEmpty(strID)) throw 'Object id is illegal';
+		if (!$.isString(strID) || $.isEmpty(strID)) throw 'Object id is illegal';
 		if (objSettings === undefined) objSettings = {};
-		if (!_.isPlainObject(objSettings)) throw 'Settings are illegal';
+		if (!$.isPlainObject(objSettings)) throw 'Settings are illegal';
 
 		this.id = strID.toString();
-		this.settings = _.defaults(objSettings, _defaults);
+		this.settings = $.extend({}, _defaults, objSettings);
 		this.items = [];
 
 		return this;
@@ -63,7 +53,7 @@
 		 * @param {Object} objItem Object to add
 		 */
 		addItem: function (objItem) {
-			if (!_.isObject(objItem)) throw 'Object is illegal';
+			if (!$.isObject(objItem)) throw 'Object is illegal';
 
 			// Add object to items collection:
 			if (this.itemExists(objItem) === false) {
@@ -91,15 +81,12 @@
 		 * @returns {Boolean} True if object removed successfully, false otherwise.
 		 */
 		removeItem: function (strID) {
-			if (!_.isString(strID) || _.isEmpty(strID)) throw 'Object id is illegal';
+			if (!$.isString(strID) || $.isEmpty(strID)) throw 'Object id is illegal';
 
-			var intCurrentCount = this.countItems(),
-				intNewCount;
+			var intIndex = this.getIndex(strID);
 
-			this.items = _.reject(this.items, { "id": strID });
-			intNewCount = this.countItems();
-
-			if (intCurrentCount > intNewCount) {
+			if (intIndex >= 0) {
+				this.items.splice(intIndex, 1);
 				console.log('Object "%s" removed from collection', strID);
 				return true;
 			}
@@ -124,11 +111,38 @@
 		 * @returns {Object}
 		 */
 		getItem: function (strProperty, objValue) {
-			if (!_.isString(strProperty) || _.isEmpty(strProperty)) throw 'Property is illegal';
+			var objItem = null,
+				self = this;
 
-			return _.find(this.items, function(item) {
-				return JSON.stringify(item[strProperty]) === JSON.stringify(objValue);
+			if (!$.isString(strProperty) || $.isEmpty(strProperty)) throw 'Property is illegal';
+
+			$.each(self.items, function(index, item) {
+				if (JSON.stringify(item[strProperty]) === JSON.stringify(objValue)) {
+					objItem = item;
+					return false;
+				}
 			});
+
+			return objItem || undefined;
+		},
+
+		/**
+		 * Returns an item index from a collection if it exists or -1 if it doesn't
+		 * @param {String} objID The item's id
+		 * @returns {number}
+		 */
+		getIndex: function (objID) {
+			var self = this,
+				intIndex = -1;
+
+			$.each(self.items, function(index, item) {
+				if (item.id === objID) {
+					intIndex = index;
+					return false;
+				}
+			});
+
+			return intIndex;
 		},
 
 		/**
@@ -137,9 +151,27 @@
 		 * @returns {Boolean|boolean} True if exists, false otherwise
 		 */
 		itemExists: function (objItem) {
-			if (!_.isObject(objItem)) throw 'Object is illegal';
+			var blnExists = false,
+				blnAllPropsExist,
+				self = this;
 
-			return _.some(this.items, objItem);
+			if (!$.isObject(objItem)) throw 'Object is illegal';
+
+			$.each(self.items, function(index, item) {
+				blnAllPropsExist = true;
+				for (var prop in objItem) {
+					if (!item.hasOwnProperty(prop) || (item[prop] !== objItem[prop])) {
+						blnAllPropsExist = false;
+						break;
+					}
+				}
+				if (blnAllPropsExist === true) {
+					blnExists = true;
+					return false;
+				}
+			});
+
+			return blnExists;
 		}
 	};
 
@@ -153,7 +185,8 @@
 		// Call parent's constructor:
 		Core.call(this, 'Elephant', {});
 	}
-	Storage.prototype = _.create(Core.prototype, { 'constructor': Storage });
+	Storage.prototype = Object.create(Core.prototype);
+	Storage.prototype.constructor = Storage;
 
 	/**
 	 * An object in which queries are stored and share the same settings
@@ -167,7 +200,8 @@
 		// Call parent's constructor:
 		Core.call(this, strName, objSettings);
 	}
-	Store.prototype = _.create(Core.prototype, { 'constructor': Store });
+	Store.prototype = Object.create(Core.prototype);
+	Store.prototype.constructor = Store;
 
 	/**
 	 * An object in which records are stored and share the same settings
@@ -181,283 +215,87 @@
 		// Call parent constructor:
 		Core.call(this, strName, objSettings);
 	}
-	Query.prototype = _.create(Core.prototype, { 'constructor': Query });
+	Query.prototype = Object.create(Core.prototype);
+	Query.prototype.constructor = Query;
 	Query.prototype.executeQuery = function (objRecord, objSettings) {
 		// Settings given to execution are temporary and serve only the current execution:
-		var objTempSettings = _.defaults(objSettings, this.settings);
-		try {
-			objTempSettings.endpoint = _.template(objTempSettings.endpoint, objRecord.params);
-		}
-		catch (e) {
-			throw 'Missing endpoint parameters';
-		}
+		$.extend(objSettings, this.settings, objSettings);
 
 		// Check if there is already record with the same parameters:
-		if (this.settings.cacheable === true) {
+		if (this.settings.cache === true) {
 			var objExistingRecord = this.getItem('params', objRecord.params);
-			if (_.isEmpty(objExistingRecord) === false) {
+			if ($.isEmpty(objExistingRecord) === false) {
 				// Check if cached item is still valid:
-				if (_.now() - objExistingRecord.timestamps.received < this.settings.expires) {
+				if ($.now() - objExistingRecord.timestamps.received < this.settings.expires) {
+					var callbacks = objSettings.success;
+
 					console.log('Serving item from cache...');
-					var callbacks = objTempSettings.success;
 
 					// Add success function callback to array if there is only one function
-					if (typeof(callbacks) === 'function') {
-						callbacks = [callbacks];
-					}
+					if (callbacks !== undefined) {
+						if (typeof(callbacks) === 'function') {
+							callbacks = [callbacks];
+						}
 
-					// Execute all success callbacks:
-					for (var i = 0, length = callbacks.length; i < length; i++) {
-						if (typeof(callbacks[i]) === 'function') {
-							callbacks[i](objExistingRecord.output);
+						// Execute all success callbacks:
+						for (var i = 0, length = callbacks.length; i < length; i++) {
+							if (typeof(callbacks[i]) === 'function') {
+								callbacks[i](objExistingRecord.data);
+							}
 						}
 					}
+
+					return objExistingRecord.data;
 				}
 				else {
 					// Remove deprecated item and get an up-to-date record:
 					this.removeItem(objExistingRecord.id);
-					executeXHR.call(this, objRecord, objTempSettings);
 				}
 			}
-			else {	// No such record, execute AJAX
-				executeXHR.call(this, objRecord, objTempSettings);
-			}
-		}
-		else {	// Query is not cacheable
-			executeXHR.call(this, objRecord, objTempSettings);
 		}
 
-		function executeXHR(objRecord, objSettings) {
-			var self = this,
-				xhr = new XHR(_.defaults(objSettings, this.settings), objRecord.params);
+		var self = this;
 
-			objRecord.timestamps.sent = _.now();
-			xhr.execute(
-				// Success callbacks:
-				function (response) {
-					var callbacks = objSettings.success,
-						process = objSettings.process,
-						output;
-
-					switch (objSettings.format) {
-						case 'json':
-							output = JSON.parse(response.responseText);
-							break;
-						case 'xml':
-							output = response.responseXML;
-							break;
-						default:
-							output = response.responseText;
-							break;
-					}
-
-					// Manipulate output if process callback is defined
-					if (typeof(process) === 'function') {
-						output = process(output);
-					}
-					// Add record object to the query object:
-					objRecord.output = output;
-					self.addItem(objRecord);
-
-					// Add success function callback to array if there is only one function
-					if (typeof(callbacks) === 'function') {
-						callbacks = [callbacks];
-					}
-
-					// Execute all success callbacks:
-					for (var i = 0, length = callbacks.length; i < length; i++) {
-						if (typeof(callbacks[i]) === 'function') {
-							callbacks[i](objRecord.output);
-						}
-					}
-				},
-				// Error callbacks:
-				function (response) {
-					var callbacks = objSettings.error;
-					if (typeof(callbacks) === 'function') {
-						callbacks = [callbacks];
-					}
-
-					// Remove record:
-					objRecord = null;
-
-					// Execute all success callbacks:
-					for (var i = 0, length = callbacks.length; i < length; i++) {
-						if (typeof(callbacks[i]) === 'function') {
-							callbacks[i](response);
-						}
-					}
-				},
-				// Complete callbacks:
-				function (response) {
-					if (objRecord !== null) {
-						objRecord.timestamps.received = _.now();
-					}
-
-					var callbacks = objSettings.complete;
-					if (typeof(callbacks) === 'function') {
-						callbacks = [callbacks];
-					}
-
-					for (var i = 0, length = callbacks.length; i < length; i++) {
-						if (typeof(callbacks[i]) === 'function') {
-							callbacks[i](response);
-						}
-					}
-				});
-		}
+		objRecord.timestamps.sent = $.now();
+		return $.ajax(objSettings)
+			.done(function (data) {
+				// Manipulate output data if process callback is defined
+				if (typeof(objSettings.process) === 'function') {
+					data = objSettings.process(data);
+				}
+				// Add record object to the query object:
+				objRecord.data = data;
+				self.addItem(objRecord);
+			})
+			.fail(function () {
+				// Remove record:
+				objRecord = null;
+			})
+			.always(function () {
+				if (objRecord !== null) {
+					objRecord.timestamps.received = $.now();
+				}
+			});
 	};
 
 	/**
 	 * An object in which single data object is stored
 	 * @class Record
 	 * @param {Object} objParams Collection of parameters which for current record
-	 * @param {Object} objOutput Data object returned after execution
+	 * @param {Object} objData Data object returned after execution
 	 * @extends Core
 	 * @constructor
 	 */
-	function Record (objParams, objOutput) {
-		this.id = _.uniqueId();
+	function Record (objParams, objData) {
+		this.id = $.uniqueId();
 		this.timestamps = {
-			created: _.now(),
+			created: $.now(),
 			sent: null,
 			received: null
 		};
 		this.params = objParams;
-		this.output = objOutput;
+		this.data = objData;
 	}
-	// </editor-fold>
-
-	// <editor-fold desc="XHR">
-	var XHR = function (objSettings, objParams) {
-		this.xhr = null;
-		this.params = objParams;
-		this.settings = {
-			async: true,
-			endpoint: '',
-			timeout: null,
-			method: 'GET'
-		};
-
-		this.init(objSettings);
-	};
-	XHR.prototype = (function() {
-			var serialize = function(objParams) {
-				var str = [];
-
-				for(var param in objParams)
-					if (objParams.hasOwnProperty(param)) {
-						str.push(encodeURIComponent(param) + "=" + encodeURIComponent(objParams[param]));
-					}
-				return str.join("&");
-			},
-
-			execute = function (fncSuccess, fncError, fncComplete) {
-				if (this.xhr !== undefined && this.endpoint !== '') {
-					var strParams = serialize(this.params);
-
-					// Synchronous requests must not set a timeout:
-					if (this.settings.async === true)
-						this.xhr.timeout = this.settings.timeout;
-					// Set callback
-					this.xhr.onreadystatechange = function () {
-						switch (this.readyState) {
-//							case 0:		// Object created
-//								console.log('Object created');
-//								break;
-//							case 1:		// Object opened
-//								console.log('Object opened');
-//								break;
-//							case 2:		// Object sent, headers returned
-//								console.log('Object sent, headers returned');
-//								break;
-//							case 3:		// Request in progress, body partially returned
-//								console.log('Request in progress, body partially returned');
-//								break;
-							case 4:		// Request completed
-								console.log('Request completed');
-								// Success
-								if (this.status >= 200 && this.status <= 299) {
-									if (typeof(fncSuccess) === 'function') {
-										fncSuccess(this);
-									}
-								}
-								// Error
-								else {
-									if (typeof(fncError) === 'function') {
-										fncError(this);
-									}
-								}
-								// Complete
-								if (typeof(fncComplete) === 'function') {
-									fncComplete(this);
-								}
-								break;
-						}
-					};
-
-
-					switch (this.settings.method) {
-						case 'POST':
-							this.xhr.open(this.settings.method, this.settings.endpoint, this.settings.async);
-							this.xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-							this.xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-							this.xhr.setRequestHeader('Connection', 'close');
-							this.xhr.send(strParams);
-							break;
-						default:
-							var strEndpoint = this.settings.endpoint;
-							if (strParams !== '' && strEndpoint.indexOf(strParams) < 0) {
-								if (strEndpoint.indexOf('?') >= 0) {
-									strEndpoint += '&' + strParams;
-								}
-								else {
-									strEndpoint += '?' + strParams;
-								}
-							}
-							this.xhr.open(this.settings.method, strEndpoint, this.settings.async);
-							this.xhr.send();
-							break;
-					}
-				}
-			},
-
-			createXHR = function () {
-				var objXHR = null;
-
-				if (XMLHttpRequest) {
-					try { objXHR = new XMLHttpRequest(); }
-					catch (e) { objXHR = null; }
-				}
-				else {
-					if(typeof window.ActiveXObject !== 'undefined') {
-						try { objXHR = new window.ActiveXObject("Msxml2.XMLHTTP"); }
-						catch (e) {
-							try { objXHR = new window.ActiveXObject("Microsoft.XMLHTTP"); }
-							catch (e1) {
-								objXHR = false;
-								throw new Error("This browser does not support XMLHttpRequest");
-							}
-						}
-					}
-				}
-
-				return objXHR;
-			},
-
-			init = function (settings) {
-				if (this.xhr === null) {
-					// Create a new XHR object:
-					this.xhr = createXHR();
-					this.settings = settings;
-				}
-			};
-
-		return {
-			execute: execute,
-			init: init
-		};
-	})();
 	// </editor-fold>
 
 	// <editor-fold desc="Methods">
@@ -467,78 +305,41 @@
 	 */
 	function validateSettings(settings) {
 		if (typeof(settings) !== 'object') throw 'Settings are invalid';
-		var i, length;
 
 		for(var item in settings) {
 			if (settings.hasOwnProperty(item)) {
 				switch (item) {
 					case 'async':
-						if(_.isBoolean(settings[item]) === false)
+						if($.isBoolean(settings[item]) === false)
 							throw 'Settings are illegal: "async" must be a boolean';
 						break;
-					case 'format':
-						if(/xml|text|json|html/.test(settings[item]) === false)
-							throw 'Settings are illegal: "format" must be a either xml, json, html or text';
+					case 'dataType':
+						if(/xml|script|json|html/.test(settings[item]) === false)
+							throw 'Settings are illegal: "dataType" must be a either xml, json, html or script';
 						break;
 					case 'timeout':
-						if(_.isNumber(settings[item]) === false)
+						if($.isNumeric(settings[item]) === false)
 							throw 'Settings are illegal: "timeout" must be a positive integer';
 						break;
-					case 'endpoint':
-						if(_.isString(settings[item]) === false)
-							throw 'Settings are illegal: "endpoint" must be a string';
+					case 'url':
+						if($.isString(settings[item]) === false)
+							throw 'Settings are illegal: "url" must be a string';
 						break;
-					case 'cacheable':
-						if(_.isBoolean(settings[item]) === false)
-							throw 'Settings are illegal: "cacheable" must be a boolean';
+					case 'cache':
+						if($.isBoolean(settings[item]) === false)
+							throw 'Settings are illegal: "cache" must be a boolean';
 						break;
 					case 'expires':
-						if(_.isNumber(settings[item]) === false)
+						if($.isNumeric(settings[item]) === false)
 							throw 'Settings are illegal: "expires" must be a positive integer';
 						break;
-					case 'method':
-						if(/GET|POST/.test(settings[item]) === false)
-							throw 'Settings are illegal: "method" must be a either GET or POST';
+					case 'type':
+						if(/GET|POST|PUT|DELETE/.test(settings[item]) === false)
+							throw 'Settings are illegal: "type" must be a either GET, POST, PUT or DELETE';
 						break;
 					case 'process':
-						if(_.isFunction(settings[item]) === false)
+						if($.isFunction(settings[item]) === false)
 							throw 'Settings are illegal: "process" callback must be a function';
-						break;
-					case 'success':
-						if(_.isArray(settings[item]) === false) {
-							if(_.isFunction(settings[item]) === false)
-								throw 'Settings are illegal: "success" callbacks must be a function or an array of functions';
-						}
-						else {
-							for (i = 0, length = settings[item].length; i < length; i++) {
-								if(_.isFunction(settings[item][i]) === false)
-									throw 'Settings are illegal: "success" callbacks must be a function or an array of functions';
-							}
-						}
-						break;
-					case 'error':
-						if(_.isArray(settings[item]) === false) {
-							if(_.isFunction(settings[item]) === false)
-								throw 'Settings are illegal: "error" callbacks must be a function or an array of functions';
-						}
-						else {
-							for (i = 0, length = settings[item].length; i < length; i++) {
-								if(_.isFunction(settings[item][i]) === false)
-									throw 'Settings are illegal: "error" callbacks must be a function or an array of functions';
-							}
-						}
-						break;
-					case 'complete':
-						if(_.isArray(settings[item]) === false) {
-							if(_.isFunction(settings[item]) === false)
-								throw 'Settings are illegal: "complete" callbacks must be a function or an array of functions';
-						}
-						else {
-							for (i = 0, length = settings[item].length; i < length; i++) {
-								if(_.isFunction(settings[item][i]) === false)
-									throw 'Settings are illegal: "complete" callbacks must be a function or an array of functions';
-							}
-						}
 						break;
 				}
 			}
@@ -552,9 +353,9 @@
 	 * @param objSettings {Object} settings New store settings. Will be used as default settings for all of its items
 	 */
 	function createStore (strID, objSettings) {
-		if (!_.isString(strID) || _.isEmpty(strID)) throw 'Store id is illegal';
+		if (!$.isString(strID) || $.isEmpty(strID)) throw 'Store id is illegal';
 		if (objSettings === undefined) objSettings = {};
-		if (!_.isPlainObject(objSettings)) throw 'Settings are illegal';
+		if (!$.isPlainObject(objSettings)) throw 'Settings are illegal';
 
 		// Validate settings:
 		validateSettings(objSettings);
@@ -569,7 +370,7 @@
 	 */
 	function destroyStore (strID) {
 		//try {
-			storage.removeItem(strID);
+		storage.removeItem(strID);
 		//} catch (e) {
 		//	console.error(e);
 		//}
@@ -589,20 +390,29 @@
 	 * @param {Object} [objSettings] New query settings. Will be used as default settings for all of its items
 	 */
 	function registerQuery (strStoreID, strID, objSettings) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-		if (!_.isString(strID) || _.isEmpty(strID)) throw 'Query id is illegal';
+		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+		if (!$.isString(strID) || $.isEmpty(strID)) throw 'Query id is illegal';
 		if (objSettings === undefined) objSettings = {};
-		if (!_.isPlainObject(objSettings)) throw 'Settings are illegal';
+		if (!$.isPlainObject(objSettings)) throw 'Settings are illegal';
 
 		// Validate settings:
 		validateSettings(objSettings);
 		// Get data store object:
 		var store = storage.getItem('id', strStoreID);
 		if (store === undefined) throw 'Store id could not be found';
-		// Create a new query object & inherit parent endpoint if needed:
-		var query = new Query(strID, _.defaults(objSettings, store.settings));
-		if (objSettings.endpoint.indexOf('{{inherit}}') >= 0) {
-			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
+		// Create a new query object & inherit parent's url if needed:
+		for (var prop in objSettings) {
+			if (objSettings.hasOwnProperty(prop)) {
+				switch (prop) {
+					case 'success':
+						// append, prepend, replace
+						break;
+				}
+			}
+		}
+		var query = new Query(strID, $.extend(objSettings, store.settings, objSettings));
+		if (objSettings.url.indexOf('{{inherit}}') >= 0) {
+			objSettings.url = objSettings.url.replace('{{inherit}}', store.settings.url);
 		}
 		// Add the new query object to the store:
 		store.addItem(query);
@@ -614,8 +424,8 @@
 	 * @param {String} strID Query id to remove
 	 */
 	function unregisterQuery (strStoreID, strID) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-		if (!_.isString(strID) || _.isEmpty(strID)) throw 'Query id is illegal';
+		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+		if (!$.isString(strID) || $.isEmpty(strID)) throw 'Query id is illegal';
 
 		// Get data store object:
 		var store = storage.getItem('id', strStoreID);
@@ -629,7 +439,7 @@
 	 * @param strStoreID Store id from which to remove all queries
 	 */
 	function unregisterAll(strStoreID) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
+		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
 
 		// Get data store object:
 		var store = storage.getItem('id', strStoreID);
@@ -639,16 +449,16 @@
 	}
 
 	/**
-	 * Executes a query from a specific data store and stores the output in a Record object
+	 * Executes a query from a specific data store and stores the output data in a Record object
 	 * @param {String} strStoreID Store id which the query belongs to
 	 * @param {String} strQueryID Query id to execute
 	 * @param {Object} [objSettings] Temporary query settings for current execution only. If set, it will override the default query settings
 	 */
 	function executeQuery (strStoreID, strQueryID, objSettings) {
-		if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-		if (!_.isString(strQueryID) || _.isEmpty(strQueryID)) throw 'Query id is illegal';
+		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+		if (!$.isString(strQueryID) || $.isEmpty(strQueryID)) throw 'Query id is illegal';
 		if (objSettings === undefined) objSettings = {};
-		if (!_.isPlainObject(objSettings)) throw 'Settings are illegal';
+		if (!$.isPlainObject(objSettings)) throw 'Settings are illegal';
 
 		// Validate settings:
 		validateSettings(objSettings);
@@ -659,12 +469,12 @@
 		var query = store.getItem('id', strQueryID);
 		if (query === undefined) throw 'Query id could not be found';
 
-		if (objSettings.endpoint)
-			objSettings.endpoint = objSettings.endpoint.replace('{{inherit}}', store.settings.endpoint);
+		if (objSettings.url)
+			objSettings.url = objSettings.url.replace('{{inherit}}', store.settings.url);
 
 		// Create a new record object and execute query:
-		var record = new Record(objSettings.params || {}, null);
-		query.executeQuery(record, objSettings);
+		var record = new Record(objSettings.data || {}, null);
+		return query.executeQuery(record, objSettings);
 	}
 
 	/**
@@ -678,13 +488,13 @@
 			store,
 			query;
 
-		switch (_.size(arguments)) {
+		switch (arguments.length) {
 			case 0:	// Count stores
 				intCount = storage.countItems();
 				break;
 			case 1:	// Count queries
 				// Validate input:
-				if (!_.isString(strStoreID)) throw 'Store id is illegal';
+				if (!$.isString(strStoreID)) throw 'Store id is illegal';
 				// Get store:
 				store = storage.getItem('id', strStoreID);
 				if (store === undefined) throw 'Store id could not be found';
@@ -692,8 +502,8 @@
 				break;
 			case 2:	// Count records
 				// Validate input:
-				if (!_.isString(strStoreID) || _.isEmpty(strStoreID)) throw 'Store id is illegal';
-				if (!_.isString(strQueryID) || _.isEmpty(strQueryID)) throw 'Query id is illegal';
+				if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+				if (!$.isString(strQueryID) || $.isEmpty(strQueryID)) throw 'Query id is illegal';
 				// Get store:
 				store = storage.getItem('id', strStoreID);
 				if (store === undefined) throw 'Store id could not be found';
@@ -701,7 +511,7 @@
 				query = store.getItem('id', strQueryID);
 				if (query === undefined) throw 'Query id could not be found';
 				intCount = query.countItems();
-				break
+				break;
 		}
 		// Return number of items:
 		return(intCount);
@@ -713,7 +523,80 @@
 	 */
 	(function () {
 		// Check if lodash loaded:
-		if (typeof(_) !== 'function') throw 'lodash library is required';
+		if (typeof($) !== 'function') throw 'jQuery library is required';
+
+		var objectTypes = {
+				'boolean': false,
+				'function': true,
+				'object': true,
+				'number': false,
+				'string': false,
+				'undefined': false
+			},
+			idCounter = 0;
+
+		// Extends jQuery functions list:
+		$.extend({
+			isBoolean: function(objValue) {
+				return objValue === true || objValue === false ||
+					objValue && typeof objValue === 'object' && Object.prototype.toString.call(objValue) === '[object Boolean]' || false;
+			},
+			isEmpty: function(objValue) {
+				var result = true;
+
+				if (!objValue) {
+					return result;
+				}
+				var className = Object.prototype.toString.call(objValue),
+					length = objValue.length;
+
+				if ((className === '[object Array]' || className === '[object String]' || className === '[object Arguments]' ) ||
+					(className === '[object Object]' && typeof length === 'number' && $.isFunction(objValue.splice))) {
+					return !length;
+				}
+				if ($.isObject(objValue)) {
+					return JSON.stringify(objValue) === '{}';
+				}
+				return result;
+			},
+			isObject: function (objValue) {
+				return !!(objValue && objectTypes[typeof objValue]);
+			},
+			isString: function (objValue) {
+				return typeof objValue === 'string' ||
+					objValue && typeof objValue === 'object' && Object.prototype.toString.call(objValue) === '[object String]' || false;
+			},
+			uniqueId: function (strPrefix) {
+				var id = ++idCounter;
+				return String(strPrefix === undefined ? '' : strPrefix) + id;
+			},
+			pluck: function (items, prop) {
+				var output = [];
+
+				$.each(items, function(index, item) {
+					if(item.hasOwnProperty(prop)) {
+						output.push(item[prop]);
+					}
+				});
+
+				return output;
+			}
+		});
+
+		// Add Object.create support for IE8:
+		if (!Object.create) {
+			Object.create = (function(){
+				function F(){}
+
+				return function(o){
+					if (arguments.length !== 1) {
+						throw new Error('Object.create implementation only accepts one parameter.');
+					}
+					F.prototype = o;
+					return new F();
+				};
+			})();
+		}
 
 		window.Elephant = window.Elephant || {
 			create: createStore,
@@ -723,7 +606,7 @@
 			register: registerQuery,
 			unregister: unregisterQuery,
 			unregisterAll: unregisterAll,
-			execute: executeQuery,
+			fetch: executeQuery,
 
 			count: count
 		};
@@ -731,10 +614,8 @@
 		// Create a new stores storage:
 		storage = new Storage();
 
-		_.templateSettings = {
-			'interpolate': /{{([\s\S]+?)}}/g
-		};
-
 		console.log('Elephant is ready');
+
+		return window.Elephant;
 	})();
-})(window, undefined);
+})(window, jQuery);
