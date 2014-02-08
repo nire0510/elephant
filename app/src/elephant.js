@@ -1,6 +1,6 @@
 /**
  * Elephant - Smart client side data objects manager
- * @version 0.2.0
+ * @version 0.2.1
  * @author Nir Elbaz
  * @requires $ http://jquery.com
  */
@@ -219,7 +219,7 @@
 	Query.prototype.constructor = Query;
 	Query.prototype.executeQuery = function (objRecord, objSettings) {
 		// Settings given to execution are temporary and serve only the current execution:
-		$.extend(objSettings, this.settings, objSettings);
+		objSettings = $.extend({}, this.settings, objSettings);
 
 		// Check if there is already record with the same parameters:
 		if (this.settings.cache === true) {
@@ -395,25 +395,12 @@
 		if (objSettings === undefined) objSettings = {};
 		if (!$.isPlainObject(objSettings)) throw 'Settings are illegal';
 
-		// Validate settings:
-		validateSettings(objSettings);
 		// Get data store object:
 		var store = storage.getItem('id', strStoreID);
 		if (store === undefined) throw 'Store id could not be found';
-		// Create a new query object & inherit parent's url if needed:
-		for (var prop in objSettings) {
-			if (objSettings.hasOwnProperty(prop)) {
-				switch (prop) {
-					case 'success':
-						// append, prepend, replace
-						break;
-				}
-			}
-		}
-		var query = new Query(strID, $.extend(objSettings, store.settings, objSettings));
-		if (objSettings.url.indexOf('{{inherit}}') >= 0) {
-			objSettings.url = objSettings.url.replace('{{inherit}}', store.settings.url);
-		}
+		// Validate settings:
+		validateSettings(objSettings);
+		var query = new Query(strID, $.extend({}, store.settings, objSettings));
 		// Add the new query object to the store:
 		store.addItem(query);
 	}
@@ -469,13 +456,40 @@
 		var query = store.getItem('id', strQueryID);
 		if (query === undefined) throw 'Query id could not be found';
 
-		if (objSettings.url)
-			objSettings.url = objSettings.url.replace('{{inherit}}', store.settings.url);
-
 		// Create a new record object and execute query:
 		var record = new Record(objSettings.data || {}, null);
-		return query.executeQuery(record, objSettings);
+		return query.executeQuery(record, $.extend({}, query.settings, objSettings));
 	}
+
+//	/**
+//	 * Executes multiple queries in a single call
+//	 * @param [Object] queries Array of plain objects which specify the queries to execute
+//	 */
+//	function executeQueries (queries) {
+//		for (var i = 0, length = queries.length; i < length; i++) {
+//			executeQuery (queries[i].storeID, queries[i].queryID, queries[i].settings);
+//		}
+//	}
+
+//	/**
+//	 * Get all existing records data of a query ignoring its expiration rule, if specified. Preliminary query execution is required.
+//	 * @param {String} strStoreID Store id which the query belongs to
+//	 * @param {String} strQueryID Query id to get its record
+//	 * @param {Boolean} blnIncludeMetaData Indicates whether to include record's meta data, such as execution time, parameters etc
+//	 * @returns
+//	 */
+//	function getData (strStoreID, strQueryID, blnIncludeMetaData) {
+//		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+//		if (!$.isString(strQueryID) || $.isEmpty(strQueryID)) throw 'Query id is illegal';
+//
+//		// Get data store and query objects:
+//		var store = storage.getItem('id', strStoreID);
+//		if (store === undefined) throw 'Store id could not be found';
+//		var query = store.getItem('id', strQueryID);
+//		if (query === undefined) throw 'Query id could not be found';
+//
+//		return (blnIncludeMetaData ? query.items : $.pluck(query.items, 'data'));
+//	}
 
 	/**
 	 * Counts all stores, queries or records
@@ -515,6 +529,31 @@
 		}
 		// Return number of items:
 		return(intCount);
+	}
+
+	/**
+	 * Returns settings of a store or a query
+	 * @param {String} [strStoreID] Store id
+	 * @param {String} [strQueryID] Query id. If specified then returned value is query's settings
+	 * @returns {settings} Store or query settings
+	 */
+	function getSettings (strStoreID, strQueryID) {
+		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+		if (strQueryID !== undefined && (!$.isString(strQueryID) || $.isEmpty(strQueryID))) throw 'Query id is illegal';
+
+		// Get store:
+		var store = storage.getItem('id', strStoreID);
+		if (store === undefined) throw 'Store id could not be found';
+		// Get query of store:
+		if (strQueryID !== undefined) {
+			var query = store.getItem('id', strQueryID);
+			if (query === undefined) throw 'Query id could not be found';
+			// Return query settings:
+			return query.settings;
+		}
+		// Return store settings:
+		return store.settings;
+
 	}
 	// </editor-fold>
 
@@ -608,7 +647,9 @@
 			unregisterAll: unregisterAll,
 			fetch: executeQuery,
 
-			count: count
+			count: count,
+
+			settings: getSettings
 		};
 
 		// Create a new stores storage:
