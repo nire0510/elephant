@@ -1,6 +1,6 @@
 {
-	"name": "elephantjs",
-	"version": "0.1.0",
+	"name": "elephant",
+	"version": "0.2.1",
 	"authors": [
 		"Nir Elbaz <nire0510@gmail.com>"
 	],
@@ -26,6 +26,6 @@
 		"tests"
 	],
 	"dependencies": {
-		"lodash": "~2.4.1"
+		"jquery": "~2.0.3"
 	}
 }
