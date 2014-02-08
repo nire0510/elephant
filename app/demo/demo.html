@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
-	<title></title>
+	<title>Elephant Demo</title>
 	<meta charset="utf-8">
-	<script src="../bower_components/lodash/dist/lodash.compat.min.js"></script>
-	<script src="../src/elephant.js"></script>
 </head>
 <body>
+<h1>Wrather Forecast</h1>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/libs/jquery.min.js"><\/script>')</script>
+<script src="../src/elephant.js"></script>
+
 <script>
 	// Create a new store for queries related to weather:
 	Elephant.create('Weather', {
-		'endpoint': 'http://api.openweathermap.org/data/2.5/weather',
-		'format': 'json',
-		'success': [function (data) {
+		'url': 'http://api.openweathermap.org/data/2.5/weather',
+		'dataType': 'json',
+		'cache': true,
+		'success': function (data) {
+			var paragraph = document.createElement('p');
+			paragraph.innerHTML = 'The weather in <b>' + data.name + '</b>: ' + data.weather[0].description;
+			document.body.appendChild(paragraph);
 			console.log('%cThe weather in %s: %s', 'color: green', data.name, data.weather[0].description);
-		}],
-		'error': [function (xhr) {
-			console.error('An error has occurred while trying to fetch');
-		}]
+		}
 	});
 
 	// Register a query which fetches weather by city name:
@@ -25,33 +29,23 @@
 	// Register a query which fetches weather by coordinates:
 	Elephant.register('Weather', 'getByCoords');
 
-	// Execute the first query for London as location:
-	Elephant.execute('Weather', 'getByCity', {
-		'params': {
-			'q': 'London, uk'
-	  	}
-	});
-	// Execute the first query for Tel Aviv as location:
-	Elephant.execute('Weather', 'getByCity', {
-		'params': {
-			'q': 'Tel Aviv, il'
-	  	}
-	});
-	// Execute the second query:
-	Elephant.execute('Weather', 'getByCoords', {
-		'params': {
-			'lat': 41.881944,
-	        	'lon': -87.627778
-	  	}
-	});
-	// Execute AGAIN the first query for London as location, to check the caching:
-	window.setTimeout(function () {
-		Elephant.execute('Weather', 'getByCity', {
-			'params': {
-		        	'q': 'London, uk'
-		    	}
-		});
-	}, 5000);
+	$.when(
+			Elephant.fetch('Weather', 'getByCity', {
+				'data': {
+					'q': 'London, uk'
+				}
+			}),
+			Elephant.fetch('Weather', 'getByCity', {
+				'data': {
+					'q': 'Tel Aviv, il'
+				}
+			})
+			).done(function(jqxhr1, jqxhr2) {
+				console.log('Both requests completed successfully!');
+			}).then(function () {
+
+			});
+
 </script>
 </body>
 </html>
