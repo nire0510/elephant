@@ -25,7 +25,11 @@
 	});
 
 	// Register a query which fetches weather by city name:
-	Elephant.register('Weather', 'getByCity');
+	Elephant.register('Weather', 'getByCity', {
+		success: [Elephant.settings('Weather').success, function () {
+			console.log('This is just another success callback which was added thanks to Elephant.settings');
+		}]
+	});
 	// Register a query which fetches weather by coordinates:
 	Elephant.register('Weather', 'getByCoords');
 
