@@ -1,5 +1,5 @@
-elephant
-========
+elephant - v.0.2.3
+==================
 
 Data store manager for web applications
 
@@ -179,6 +179,32 @@ $.wait(
     })
 ).done(function (jqxhr1, jqxhr2) {
 	// both requests completed successfully...
+});
+```
+
+RequireJS Configuration
+-----------------------
+Elephant is AMD compliance. Follow the following configuration to use Elephant as AMD module:
+
+```javascript
+require.config({
+	baseUrl: 'scripts',
+	'paths': {
+		'elephant': 'elephant',
+		'jquery': 'http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min'
+	},
+
+	'shim': {
+		'elephant': {
+			'deps': ['jquery']
+		}
+	}
+});
+
+require(['elephant'], function (elephant) {
+	'use strict';
+
+	console.log('Now you can use Elephant!');
 });
 ```
 
