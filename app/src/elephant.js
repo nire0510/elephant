@@ -1,6 +1,6 @@
 /**
  * Elephant - Smart client side data objects manager
- * @version 0.2.2
+ * @version 0.2.3
  * @author Nir Elbaz
  * @requires $ http://jquery.com
  */
