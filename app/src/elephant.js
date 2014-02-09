@@ -1,6 +1,6 @@
 /**
  * Elephant - Smart client side data objects manager
- * @version 0.2.1
+ * @version 0.2.2
  * @author Nir Elbaz
  * @requires $ http://jquery.com
  */
@@ -8,7 +8,7 @@
 /**
  * @namespace
  */
-(function (window, $, undefined) {
+var Elephant = window.Elephant || (function (window, $, undefined) {
 	'use strict';
 
 	/**
@@ -461,6 +461,36 @@
 		return query.executeQuery(record, $.extend({}, query.settings, objSettings));
 	}
 
+//	/**
+//	 * Executes multiple queries in a single call
+//	 * @param [Object] queries Array of plain objects which specify the queries to execute
+//	 */
+//	function executeQueries (queries) {
+//		for (var i = 0, length = queries.length; i < length; i++) {
+//			executeQuery (queries[i].storeID, queries[i].queryID, queries[i].settings);
+//		}
+//	}
+
+//	/**
+//	 * Get all existing records data of a query ignoring its expiration rule, if specified. Preliminary query execution is required.
+//	 * @param {String} strStoreID Store id which the query belongs to
+//	 * @param {String} strQueryID Query id to get its record
+//	 * @param {Boolean} blnIncludeMetaData Indicates whether to include record's meta data, such as execution time, parameters etc
+//	 * @returns
+//	 */
+//	function getData (strStoreID, strQueryID, blnIncludeMetaData) {
+//		if (!$.isString(strStoreID) || $.isEmpty(strStoreID)) throw 'Store id is illegal';
+//		if (!$.isString(strQueryID) || $.isEmpty(strQueryID)) throw 'Query id is illegal';
+//
+//		// Get data store and query objects:
+//		var store = storage.getItem('id', strStoreID);
+//		if (store === undefined) throw 'Store id could not be found';
+//		var query = store.getItem('id', strQueryID);
+//		if (query === undefined) throw 'Query id could not be found';
+//
+//		return (blnIncludeMetaData ? query.items : $.pluck(query.items, 'data'));
+//	}
+
 	/**
 	 * Counts all stores, queries or records
 	 * @param {String} [strStoreID] Store id
@@ -607,26 +637,24 @@
 			})();
 		}
 
-		window.Elephant = window.Elephant || {
-			create: createStore,
-			destroy: destroyStore,
-			destroyAll: destroyAll,
-
-			register: registerQuery,
-			unregister: unregisterQuery,
-			unregisterAll: unregisterAll,
-			fetch: executeQuery,
-
-			count: count,
-
-			settings: getSettings
-		};
-
 		// Create a new stores storage:
 		storage = new Storage();
 
 		console.log('Elephant is ready');
-
-		return window.Elephant;
 	})();
-})(window, jQuery);
+
+	return {
+		create: createStore,
+		destroy: destroyStore,
+		destroyAll: destroyAll,
+
+		register: registerQuery,
+		unregister: unregisterQuery,
+		unregisterAll: unregisterAll,
+		fetch: executeQuery,
+
+		count: count,
+
+		settings: getSettings
+	};
+})(window, window.jQuery);
