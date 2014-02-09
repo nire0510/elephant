@@ -658,3 +658,11 @@ var Elephant = window.Elephant || (function (window, $, undefined) {
 		settings: getSettings
 	};
 })(window, window.jQuery);
+
+if (typeof define === 'function' && define.amd && define.amd.jQuery) {
+	define( 'elephant', [], function () {
+		'use strict';
+
+		return Elephant;
+	});
+}
